@@ -1,0 +1,119 @@
+🌐 عرض النتيجة في المتصفح بدل الكونسل
+الفكرة: نستبدل console.log بدالة show() تكتب النتيجة داخل الصفحة. احفظ الكود في ملف index.html وافتحه في المتصفح.
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>نظام نتائج الطلاب</title>
+  <style>
+    body { font-family: Tahoma, Arial; padding: 20px; background: #f4f6f8; }
+    table { border-collapse: collapse; width: 100%; background: #fff; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background: #2c3e50; color: #fff; }
+    .pass { color: green; font-weight: bold; }
+    .fail { color: red; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h2>🎓 نظام إدارة وتحليل نتائج الطلاب</h2>
+  <div id="output"></div>
+
+<script>
+// دالة العرض في الصفحة (بدل console.log)
+const output = document.getElementById("output");
+function show(html) {
+  output.innerHTML += html;
+}
+
+// ===== 1️⃣ الكلاس =====
+class Student {
+  constructor(id, name, grades, attendance) {
+    this.id = id;
+    this.name = name;
+    this.grades = grades;
+    this.attendance = attendance;
+  }
+
+  calculateAverage() {
+    const total = this.grades.reduce((sum, g) => sum + g, 0);
+    return total / this.grades.length;
+  }
+
+  getGrade(avg) {
+    if (avg >= 90) return "A";
+    else if (avg >= 80) return "B";
+    else if (avg >= 70) return "C";
+    else if (avg >= 60) return "D";
+    else if (avg >= 50) return "E";
+    else return "F";
+  }
+
+  getFinalResult() {
+    const avg = this.calculateAverage();
+    return (avg >= 50 && this.attendance >= 75) ? "ناجح" : "يحتاج مراجعة";
+  }
+}
+
+// ===== 2️⃣ مصفوفة الطلاب =====
+const studentsList = [
+  new Student(101, "أحمد",  [90, 85, 95], 90),
+  new Student(102, "سارة",  [45, 42, 48], 80),
+  new Student(103, "محمود", [40, 44, 46], 70),
+  new Student(104, "ليلى",  [70, 65, 75], 85)
+];
+
+// ===== 3️⃣ تقرير الطلاب (جدول) =====
+let rows = studentsList.map(s => {
+  const avg = s.calculateAverage();
+  const result = s.getFinalResult();
+  const cls = result === "ناجح" ? "pass" : "fail";
+  return `<tr>
+    <td>${s.name}</td>
+    <td>${avg.toFixed(2)}</td>
+    <td>${s.getGrade(avg)}</td>
+    <td class="${cls}">${result}</td>
+  </tr>`;
+}).join("");
+
+show(`<h3>📋 تقرير الطلاب</h3>
+<table>
+  <tr><th>الاسم</th><th>المتوسط</th><th>التقدير</th><th>النتيجة</th></tr>
+  ${rows}
+</table>`);
+
+// ===== 4️⃣ لجنة الرأفة =====
+const strugglingStudents = studentsList.filter(s => {
+  const avg = s.calculateAverage();
+  return avg >= 40 && avg <= 49;
+});
+
+const leniencyResults = strugglingStudents.map(s => ({
+  id: s.id,
+  name: s.name,
+  oldAverage: s.calculateAverage(),
+  newAverage: s.calculateAverage() + 5
+}));
+
+const totalNewAverages = leniencyResults.reduce((sum, s) => sum + s.newAverage, 0);
+
+const leniencyAverage = leniencyResults.length > 0
+  ? totalNewAverages / leniencyResults.length
+  : 0;
+
+// ===== 5️⃣ عرض نتائج الرأفة =====
+let leniencyRows = leniencyResults.map(s => `<tr>
+  <td>${s.id}</td>
+  <td>${s.name}</td>
+  <td>${s.oldAverage.toFixed(2)}</td>
+  <td>${s.newAverage.toFixed(2)}</td>
+</tr>`).join("");
+
+show(`<h3>🤝 الطلاب المتعثرون (بعد الرأفة)</h3>
+<table>
+  <tr><th>رقم الجلوس</th><th>الاسم</th><th>قبل</th><th>بعد</th></tr>
+  ${leniencyRows}
+</table>
+<h3>📊 متوسط المتعثرين بعد التعديل: ${leniencyAverage.toFixed(2)}</h3>`);
+</script>
+</body>
+</html>
